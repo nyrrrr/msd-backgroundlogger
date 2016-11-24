@@ -18,9 +18,8 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".SensorDataLogger"
-            android:exported="false"
-            android:description="@string/app_name"/>
+            android:name=".BackgroundService"
+            android:description="@string/app_name" />
     </application>
 
 </manifest>
