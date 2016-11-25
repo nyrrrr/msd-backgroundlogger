@@ -11,7 +11,8 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
-            android:screenOrientation="landscape">
+            android:process="msd.main"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -19,6 +20,7 @@
         </activity>
         <service
             android:name=".BackgroundService"
+            android:process="msd.bg.svc"
             android:description="@string/app_name" />
     </application>
 

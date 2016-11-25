@@ -96,6 +96,7 @@ public class BackgroundService extends Service {
 
         @Override
         public void onSensorChanged(SensorEvent pSensorEvent) {
+            //Toast.makeText(getBaseContext(), "TEST", Toast.LENGTH_SHORT).show();
             Log.d("SENSOR", "LOG");
         }
 
