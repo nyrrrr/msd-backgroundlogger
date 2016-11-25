@@ -13,11 +13,16 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.OrientationEventListener;
 import android.widget.Toast;
 
-import com.nyrrrr.msd.collector.SensorData;
 import com.nyrrrr.msd.collector.SensorReader;
+import com.nyrrrr.msd.collector.StorageManager;
+
+import org.json.JSONException;
+
+import java.io.IOException;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -67,6 +72,13 @@ public class BackgroundService extends Service {
     @Override
     public void onDestroy() {
         Toast.makeText(this, "DESTROYED", LENGTH_SHORT).show();
+        try {
+            StorageManager.getInstance().storeData(getBaseContext(), true);
+        } catch (IOException e) {
+            Log.e("IO ERROR", e.getMessage());
+        } catch (JSONException e) {
+            Log.e("JSON ERROR", e.getMessage());
+        }
         super.onDestroy(); // TODO backup data?
     }
 
@@ -96,14 +108,9 @@ public class BackgroundService extends Service {
             registerListeners();
         }
 
-        //int i = 0;
         @Override
         public void onSensorChanged(SensorEvent pSensorEvent) {
-            // if(++i == 1000) {
-            //Toast.makeText(getBaseContext(), "TEST", Toast.LENGTH_SHORT).show();
-            //     i = 0;
-            // }
-            new SensorData(pSensorEvent, iOrientationLogVar).print();
+            StorageManager.getInstance().addSensorDataLogEntry(pSensorEvent, iOrientationLogVar);
         }
 
         @Override
