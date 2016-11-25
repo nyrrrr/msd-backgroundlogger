@@ -13,9 +13,10 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.view.OrientationEventListener;
 import android.widget.Toast;
 
+import com.nyrrrr.msd.collector.SensorData;
 import com.nyrrrr.msd.collector.SensorReader;
 
 import static android.widget.Toast.LENGTH_SHORT;
@@ -34,6 +35,8 @@ public class BackgroundService extends Service {
     private SensorReader oSensorReader;
     private SensorManager oSensorManager;
     private Sensor oAcceleroMeter;
+    private OrientationEventListener oOrientationEventListener;
+    private int iOrientationLogVar = OrientationEventListener.ORIENTATION_UNKNOWN;
 
     @Override
     public void onCreate() {
@@ -90,19 +93,40 @@ public class BackgroundService extends Service {
 
         @Override
         public void handleMessage(Message pMsg) {
-            oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_FASTEST);
-            Log.d("THREAD", "do something");
+            registerListeners();
         }
 
+        //int i = 0;
         @Override
         public void onSensorChanged(SensorEvent pSensorEvent) {
+            // if(++i == 1000) {
             //Toast.makeText(getBaseContext(), "TEST", Toast.LENGTH_SHORT).show();
-            Log.d("SENSOR", "LOG");
+            //     i = 0;
+            // }
+            new SensorData(pSensorEvent, iOrientationLogVar).print();
         }
 
         @Override
-        public void onAccuracyChanged(Sensor pSensor, int pAccuracy) {
+        public void onAccuracyChanged(Sensor pSensor, int pAccuracy) {}
 
+        /**
+         *
+         */
+        private void registerListeners() {
+            // register accelerometer
+            oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_FASTEST);
+
+            //register orientation listener
+            oOrientationEventListener = new OrientationEventListener(
+                    getApplicationContext(), SensorManager.SENSOR_DELAY_FASTEST) {
+                @Override
+                public void onOrientationChanged(int pOrientation) {
+                    iOrientationLogVar = pOrientation;
+                }
+            };
+            if (oOrientationEventListener.canDetectOrientation()) {
+                oOrientationEventListener.enable();
+            }
         }
     }
 }
