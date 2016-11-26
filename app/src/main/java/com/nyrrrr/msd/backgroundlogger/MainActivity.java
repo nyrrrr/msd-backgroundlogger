@@ -18,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+// TODO       stopService(oIntent);
         super.onDestroy();
     }
+
 }

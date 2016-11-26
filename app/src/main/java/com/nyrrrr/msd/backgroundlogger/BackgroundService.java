@@ -20,9 +20,12 @@ import android.widget.Toast;
 import com.nyrrrr.msd.collector.SensorReader;
 import com.nyrrrr.msd.collector.StorageManager;
 
-import org.json.JSONException;
-
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -33,7 +36,7 @@ import static android.widget.Toast.LENGTH_SHORT;
  * @// TODO: 24.11.2016 remove toasts
  */
 
-public class BackgroundService extends Service {
+public class BackgroundService extends Service implements SensorEventListener {
     private Looper oServiceLooper;
     private BackgroundServiceHandler oServiceHandler;
 
@@ -55,6 +58,7 @@ public class BackgroundService extends Service {
         oSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         oSensorReader = new SensorReader(oSensorManager);
         oAcceleroMeter = oSensorReader.getSingleSensorOfType(Sensor.TYPE_ACCELEROMETER);
+//        registerListeners();
     }
 
     @Override
@@ -70,17 +74,25 @@ public class BackgroundService extends Service {
     }
 
     @Override
-    public void onDestroy() {
-        Toast.makeText(this, "DESTROYED", LENGTH_SHORT).show();
-        try {
-            StorageManager.getInstance().storeData(getBaseContext(), true);
-        } catch (IOException e) {
-            Log.e("IO ERROR", e.getMessage());
-        } catch (JSONException e) {
-            Log.e("JSON ERROR", e.getMessage());
-        }
-        super.onDestroy(); // TODO backup data?
+    public void onSensorChanged(SensorEvent pSensorEvent) {
+        StorageManager.getInstance().addSensorDataLogEntry(pSensorEvent, iOrientationLogVar);
     }
+
+    @Override
+    public void onAccuracyChanged(Sensor pSensor, int pAccuracy) {}
+
+//    @Override
+//    public void onDestroy() {
+//        Toast.makeText(this, "DESTROYED", LENGTH_SHORT).show();
+//        try {
+//            StorageManager.getInstance().storeData(getBaseContext(), true);
+//        } catch (IOException e) {
+//            Log.e("IO ERROR", e.getMessage());
+//        } catch (JSONException e) {
+//            Log.e("JSON ERROR", e.getMessage());
+//        }
+//        super.onDestroy();
+//    }
 
     @Nullable
     @Override
@@ -88,16 +100,50 @@ public class BackgroundService extends Service {
         return null;
     }
 
-    @Override
-    public void onLowMemory() {
-        Toast.makeText(this, "Memory low", LENGTH_SHORT).show();
-        super.onLowMemory(); // TODO do not kill
+    public void socketTest() {
+        String serverName = "192.168.2.197";
+        int port = 4444;
+
+        try {
+            Socket socket = new Socket(serverName, port);
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            writer.println("CLIENT INPUT");
+            writer.flush();
+
+            Log.d("RESPONSE", reader.readLine());
+        } catch (UnknownHostException e) {
+            Log.e("HOST ERROR", e.getMessage());
+        } catch (IOException e) {
+            Log.e("IO ERROR", e.getMessage());
+        }
+
+    }
+    /**
+     *
+     */
+    private void registerListeners() {
+        // register accelerometer
+        oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_FASTEST);
+
+        //register orientation listener
+        oOrientationEventListener = new OrientationEventListener(
+                getApplicationContext(), SensorManager.SENSOR_DELAY_FASTEST) {
+            @Override
+            public void onOrientationChanged(int pOrientation) {
+                iOrientationLogVar = pOrientation;
+            }
+        };
+        if (oOrientationEventListener.canDetectOrientation()) {
+            oOrientationEventListener.enable();
+        }
     }
 
     /**
      * This class is needed to receive messages from the thread and keep the logging process alive.
      */
-    public class BackgroundServiceHandler extends Handler implements SensorEventListener {
+    public class BackgroundServiceHandler extends Handler  {
 
         public BackgroundServiceHandler(Looper pLooper) {
             super(pLooper);
@@ -105,35 +151,7 @@ public class BackgroundService extends Service {
 
         @Override
         public void handleMessage(Message pMsg) {
-            registerListeners();
-        }
-
-        @Override
-        public void onSensorChanged(SensorEvent pSensorEvent) {
-            StorageManager.getInstance().addSensorDataLogEntry(pSensorEvent, iOrientationLogVar);
-        }
-
-        @Override
-        public void onAccuracyChanged(Sensor pSensor, int pAccuracy) {}
-
-        /**
-         *
-         */
-        private void registerListeners() {
-            // register accelerometer
-            oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_FASTEST);
-
-            //register orientation listener
-            oOrientationEventListener = new OrientationEventListener(
-                    getApplicationContext(), SensorManager.SENSOR_DELAY_FASTEST) {
-                @Override
-                public void onOrientationChanged(int pOrientation) {
-                    iOrientationLogVar = pOrientation;
-                }
-            };
-            if (oOrientationEventListener.canDetectOrientation()) {
-                oOrientationEventListener.enable();
-            }
+            socketTest();
         }
     }
 }

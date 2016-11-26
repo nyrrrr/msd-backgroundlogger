@@ -11,7 +11,6 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
-            android:process="msd.main"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,8 +19,10 @@
         </activity>
         <service
             android:name=".BackgroundService"
-            android:process="msd.bg.svc"
-            android:description="@string/app_name" />
+            android:description="@string/app_name"/>
     </application>
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
 </manifest>
