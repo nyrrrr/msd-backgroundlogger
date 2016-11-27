@@ -20,10 +20,13 @@ import android.widget.Toast;
 import com.nyrrrr.msd.collector.SensorReader;
 import com.nyrrrr.msd.collector.StorageManager;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -79,7 +82,8 @@ public class BackgroundService extends Service implements SensorEventListener {
     }
 
     @Override
-    public void onAccuracyChanged(Sensor pSensor, int pAccuracy) {}
+    public void onAccuracyChanged(Sensor pSensor, int pAccuracy) {
+    }
 
 //    @Override
 //    public void onDestroy() {
@@ -101,25 +105,41 @@ public class BackgroundService extends Service implements SensorEventListener {
     }
 
     public void socketTest() {
-        String serverName = "192.168.2.197";
-        int port = 4444;
 
+        String serverName = "192.168.2.102";
+        int port = 4444;
+        Log.d("SOCKET", "TEST");
         try {
             Socket socket = new Socket(serverName, port);
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+//            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            writer.println("CLIENT INPUT");
-            writer.flush();
 
+            String fileName = "5177825794384-victim-data.csv";
+            File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + fileName);
+            byte[] byteArray = new byte[(int) file.length()];
+            FileInputStream inputStream = new FileInputStream(file);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+            bufferedInputStream.read(byteArray, 0, byteArray.length);
+
+            OutputStream sender = socket.getOutputStream();
+            Log.d("Sending", fileName);
+
+            sender.write(byteArray, 0, byteArray.length);
+            sender.flush();
+
+
+            // response
             Log.d("RESPONSE", reader.readLine());
+
+            socket.close();
         } catch (UnknownHostException e) {
             Log.e("HOST ERROR", e.getMessage());
         } catch (IOException e) {
             Log.e("IO ERROR", e.getMessage());
         }
-
     }
+
     /**
      *
      */
@@ -143,7 +163,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     /**
      * This class is needed to receive messages from the thread and keep the logging process alive.
      */
-    public class BackgroundServiceHandler extends Handler  {
+    public class BackgroundServiceHandler extends Handler {
 
         public BackgroundServiceHandler(Looper pLooper) {
             super(pLooper);
