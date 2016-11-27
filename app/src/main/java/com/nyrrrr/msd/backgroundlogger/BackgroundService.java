@@ -20,7 +20,6 @@ import android.widget.Toast;
 import com.nyrrrr.msd.collector.SensorReader;
 import com.nyrrrr.msd.collector.StorageManager;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -117,10 +116,11 @@ public class BackgroundService extends Service implements SensorEventListener {
 
             String fileName = "5177825794384-victim-data.csv";
             File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + fileName);
-            byte[] byteArray = new byte[(int) file.length()];
+            char[] charArray = new char[(int) file.length()];
             FileInputStream inputStream = new FileInputStream(file);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-            bufferedInputStream.read(byteArray, 0, byteArray.length);
+            BufferedReader fileReader = new BufferedReader(new InputStreamReader(inputStream));
+            
+            fileReader.read(charArray, 0, charArray.length);
 
             OutputStream sender = socket.getOutputStream();
 
@@ -128,7 +128,7 @@ public class BackgroundService extends Service implements SensorEventListener {
             writer.println("FILE");
             writer.flush();
             String message = reader.readLine();
-            if(message.equals("File name?")) {
+            if (message.equals("File name?")) {
                 Log.d("Server response", message);
                 writer.println(fileName);
                 writer.flush();
@@ -141,32 +141,18 @@ public class BackgroundService extends Service implements SensorEventListener {
                     if (message.equals("Waiting for file...")) {
                         Log.d("Server response", message);
                         Log.d("Sending", fileName);
-                        sender.write(byteArray, 0, byteArray.length); // TODO replace with writer?
-                        sender.flush();
-                    }else {
+                        writer.write(charArray, 0, charArray.length);
+                        writer.flush();
+                        Log.d("Server response", message = reader.readLine());
+                    } else {
                         Log.e("File size Error", message);
                     }
-                }else {
+                } else {
                     Log.e("File name Error", message);
                 }
-
-            }
-            else {
+            } else {
                 Log.e("Server Error", message);
             }
-
-            // response
-            // TODO send file size
-            // response
-            // TODO send file
-            // response
-
-
-
-
-            // response
-            Log.d("RESPONSE", reader.readLine());
-
             socket.close();
         } catch (UnknownHostException e) {
             Log.e("HOST ERROR", e.getMessage());
