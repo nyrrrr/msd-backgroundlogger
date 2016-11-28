@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Saves data on phone
  * Currently saves the data in JSON. I might reconsider this format.
- *
+ * <p>
  * Created by nyrrrr on 27.09.2016.
  */
 
@@ -66,7 +66,7 @@ public class StorageManager {
         oData = new JSONArray();
 
         for (SensorData dataObject : oSensorDataList) {
-                oData.put(dataObject.toJSONObject());
+            oData.put(dataObject.toJSONObject());
         }
         return oData;
     }
@@ -80,7 +80,7 @@ public class StorageManager {
     private String convertSensorDataLogToCSV() {
         String csvString = oSensorDataList.get(0).getCsvHeaders();
         for (SensorData dataObject : oSensorDataList) {
-                csvString += dataObject.toCSVString();
+            csvString += dataObject.toCSVString();
         }
         Log.d("CSV", csvString);
         return csvString;
@@ -99,13 +99,13 @@ public class StorageManager {
         oData = convertSensorDataLogToJSON();
 
         String fileName = oData.getJSONObject(0).get("Timestamp") + "-";
-        FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_JSON_FILE_NAME);
-        file.write(oData.toString(4));
-        file.flush();
-        file.close();
+//        FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_JSON_FILE_NAME);
+//        file.write(oData.toString(4));
+//        file.flush();
+//        file.close();
 
         // write csv
-        file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_CSV_FILE_NAME);
+        FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_CSV_FILE_NAME);
         file.write(convertSensorDataLogToCSV());
         file.flush();
         file.close();
