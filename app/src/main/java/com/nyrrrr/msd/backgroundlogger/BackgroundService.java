@@ -20,6 +20,8 @@ import android.widget.Toast;
 import com.nyrrrr.msd.collector.SensorReader;
 import com.nyrrrr.msd.collector.StorageManager;
 
+import org.json.JSONException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,9 +42,9 @@ import static android.widget.Toast.LENGTH_SHORT;
  */
 
 public class BackgroundService extends Service implements SensorEventListener {
+    HandlerThread oThread;
     private Looper oServiceLooper;
     private BackgroundServiceHandler oServiceHandler;
-
     private SensorReader oSensorReader;
     private SensorManager oSensorManager;
     private Sensor oAcceleroMeter;
@@ -51,28 +53,30 @@ public class BackgroundService extends Service implements SensorEventListener {
 
     @Override
     public void onCreate() {
-        // start thread
-        HandlerThread thread = new HandlerThread("SensorData", Process.THREAD_PRIORITY_BACKGROUND);
-        thread.start();
+        if (StorageManager.getInstance().getSensorDataLogLength() <= 0) {
+            // start oThread
+            oThread = new HandlerThread("SensorData", Process.THREAD_PRIORITY_BACKGROUND);
+            oThread.start();
 
-        oServiceLooper = thread.getLooper();
-        oServiceHandler = new BackgroundServiceHandler(oServiceLooper);
+            oServiceLooper = oThread.getLooper();
+            oServiceHandler = new BackgroundServiceHandler(oServiceLooper);
 
-        oSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        oSensorReader = new SensorReader(oSensorManager);
-        oAcceleroMeter = oSensorReader.getSingleSensorOfType(Sensor.TYPE_ACCELEROMETER);
-//        registerListeners();
+            oSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+            oSensorReader = new SensorReader(oSensorManager);
+            oAcceleroMeter = oSensorReader.getSingleSensorOfType(Sensor.TYPE_ACCELEROMETER);
+            registerListeners();
+        }
     }
 
     @Override
     public int onStartCommand(Intent pIntent, int pFlags, int pStartId) {
         Toast.makeText(this, "Service started", LENGTH_SHORT).show();
-
-        Message message = oServiceHandler.obtainMessage();
-        message.arg1 = pStartId;
-        message.arg2 = pFlags;
-        oServiceHandler.sendMessage(message);
-
+        if (oThread != null) {
+            Message message = oServiceHandler.obtainMessage();
+            message.arg1 = pStartId;
+            message.arg2 = pFlags;
+            oServiceHandler.sendMessage(message);
+        }
 //        return START_REDELIVER_INTENT;
         return START_STICKY;
     }
@@ -80,24 +84,32 @@ public class BackgroundService extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent pSensorEvent) {
         StorageManager.getInstance().addSensorDataLogEntry(pSensorEvent, iOrientationLogVar);
+        if (StorageManager.getInstance().getSensorDataLogLength() > 9999) {
+            try {
+                StorageManager.getInstance().storeData(this);
+            } catch (IOException e) {
+                Log.e("IO ERROR", e.getMessage());
+            } catch (JSONException e) {
+                Log.e("JSON ERROR", e.getMessage());
+            }
+        }
     }
 
     @Override
     public void onAccuracyChanged(Sensor pSensor, int pAccuracy) {
     }
 
-//    @Override
-//    public void onDestroy() {
-//        Toast.makeText(this, "DESTROYED", LENGTH_SHORT).show();
-//        try {
-//            StorageManager.getInstance().storeData(getBaseContext(), true);
-//        } catch (IOException e) {
-//            Log.e("IO ERROR", e.getMessage());
-//        } catch (JSONException e) {
-//            Log.e("JSON ERROR", e.getMessage());
-//        }
-//        super.onDestroy();
-//    }
+    @Override
+    public void onDestroy() {
+        try {
+            StorageManager.getInstance().storeData(this);
+        } catch (IOException e) {
+            Log.e("IO ERROR", e.getMessage());
+        } catch (JSONException e) {
+            Log.e("JSON ERROR", e.getMessage());
+        }
+        super.onDestroy();
+    }
 
     @Nullable
     @Override
@@ -183,7 +195,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     }
 
     /**
-     * This class is needed to receive messages from the thread and keep the logging process alive.
+     * This class is needed to receive messages from the oThread and keep the logging process alive.
      */
     public class BackgroundServiceHandler extends Handler {
 
@@ -194,10 +206,6 @@ public class BackgroundService extends Service implements SensorEventListener {
         @Override
         public void handleMessage(Message pMsg) {
             //socketTest();
-            int i = 0;
-            while(true) {
-                if(i++ == 1000) Toast.makeText(getBaseContext(), "TEST", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 }

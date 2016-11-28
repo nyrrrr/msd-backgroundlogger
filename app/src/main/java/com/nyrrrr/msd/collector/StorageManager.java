@@ -82,7 +82,6 @@ public class StorageManager {
         for (SensorData dataObject : oSensorDataList) {
             csvString += dataObject.toCSVString();
         }
-        Log.d("CSV", csvString);
         return csvString;
     }
 
@@ -103,7 +102,7 @@ public class StorageManager {
 //        file.write(oData.toString(4));
 //        file.flush();
 //        file.close();
-
+        Log.d("Data logged", oData.length() + "");
         // write csv
         FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_CSV_FILE_NAME);
         file.write(convertSensorDataLogToCSV());
@@ -111,12 +110,6 @@ public class StorageManager {
         file.close();
 
         oSensorDataList = new ArrayList<SensorData>(); // reset list
-    }
-
-    // debug-only
-    public void storeData(Context pAppContext, boolean pDebug) throws IOException, JSONException {
-        this.storeData(pAppContext);
-        Log.d("JSON Write debug", oData.toString(4));
     }
 
     /**
