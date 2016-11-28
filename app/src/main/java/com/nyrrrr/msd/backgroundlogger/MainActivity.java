@@ -12,8 +12,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        oIntent = new Intent(this, BackgroundService.class);
-        startService(oIntent);
+//        oIntent = new Intent(this, BackgroundService.class);
+//        startService(oIntent);
     }
 
     @Override

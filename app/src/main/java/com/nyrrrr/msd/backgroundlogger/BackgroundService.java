@@ -73,7 +73,8 @@ public class BackgroundService extends Service implements SensorEventListener {
         message.arg2 = pFlags;
         oServiceHandler.sendMessage(message);
 
-        return START_REDELIVER_INTENT;
+//        return START_REDELIVER_INTENT;
+        return START_STICKY;
     }
 
     @Override
@@ -119,7 +120,7 @@ public class BackgroundService extends Service implements SensorEventListener {
             char[] charArray = new char[(int) file.length()];
             FileInputStream inputStream = new FileInputStream(file);
             BufferedReader fileReader = new BufferedReader(new InputStreamReader(inputStream));
-            
+
             fileReader.read(charArray, 0, charArray.length);
 
             OutputStream sender = socket.getOutputStream();
@@ -192,7 +193,11 @@ public class BackgroundService extends Service implements SensorEventListener {
 
         @Override
         public void handleMessage(Message pMsg) {
-            socketTest();
+            //socketTest();
+            int i = 0;
+            while(true) {
+                if(i++ == 1000) Toast.makeText(getBaseContext(), "TEST", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

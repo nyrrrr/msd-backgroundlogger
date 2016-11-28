@@ -11,6 +11,7 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
+            android:process="com.nyrrrr.msd.backlogger.main"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,10 +20,18 @@
         </activity>
         <service
             android:name=".BackgroundService"
-            android:description="@string/app_name"/>
+            android:process="com.nyrrrr.msd.backlogger.service"
+            android:description="@string/app_name" />
+        <receiver android:name=".Bootloader">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
     </application>
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
 </manifest>
