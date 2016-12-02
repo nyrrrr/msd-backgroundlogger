@@ -11,7 +11,7 @@ import android.content.Intent;
 public class Bootloader extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Intent startServiceIntent = new Intent(context, BackgroundService.class);
+        Intent startServiceIntent = new Intent(context, BackgroundLoggerService.class);
         context.startService(startServiceIntent);
     }
 }

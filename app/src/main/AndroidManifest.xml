@@ -18,7 +18,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".BackgroundService"
+            android:name=".BackgroundLoggerService"
             android:description="@string/app_name" />
         <receiver android:name=".Bootloader">
             <intent-filter>

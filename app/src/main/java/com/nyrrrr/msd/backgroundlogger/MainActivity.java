@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.nyrrrr.msd.collector.StorageManager;
 
@@ -42,18 +43,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    protected ServiceConnection oConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            Log.d("LOG", "connected");
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.d("LOG", "DISconnected");
-        }
-    };
-
     /**
      * Start Service if it's not already started.
      * Otherwise create a backup of the current dataset.
@@ -68,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("JSON ERROR", e.getMessage());
             }
         } else {
-            oIntent = new Intent(this, BackgroundService.class);
+            oIntent = new Intent(this, BackgroundLoggerService.class);
             startService(oIntent);
         }
     }
@@ -78,10 +67,29 @@ public class MainActivity extends AppCompatActivity {
         oButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO bind
-                oIntent = new Intent(getApplicationContext(), BackgroundService.class);
                 bindService(oIntent, oConnection, Context.BIND_ABOVE_CLIENT);
+                // TODO block ui
             }
         });
     }
+
+    protected ServiceConnection oConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Toast.makeText(getApplicationContext(), "Updating...", Toast.LENGTH_SHORT).show();
+            new BackgroundUploadTask() {
+                @Override
+                protected void onPostExecute(Object o) {
+                    Toast.makeText(getApplicationContext(), "Update successful", Toast.LENGTH_SHORT).show();
+                    unbindService(oConnection);
+                }
+            }.execute(getApplicationContext());
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d("LOG", "DISconnected");
+        }
+    };
 }
