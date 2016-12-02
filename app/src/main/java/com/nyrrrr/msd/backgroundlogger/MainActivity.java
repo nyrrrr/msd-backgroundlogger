@@ -68,11 +68,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 bindService(oIntent, oConnection, Context.BIND_ABOVE_CLIENT);
-                // TODO block ui
+                oButton.setEnabled(false);
             }
         });
     }
 
+    // used for binding service to main app
     protected ServiceConnection oConnection = new ServiceConnection() {
 
         @Override
@@ -83,13 +84,14 @@ public class MainActivity extends AppCompatActivity {
                 protected void onPostExecute(Object o) {
                     Toast.makeText(getApplicationContext(), "Update successful", Toast.LENGTH_SHORT).show();
                     unbindService(oConnection);
+                    oButton.setEnabled(true);
                 }
             }.execute(getApplicationContext());
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.d("LOG", "DISconnected");
+            Log.d("LOG", "Disconnected");
         }
     };
 }
