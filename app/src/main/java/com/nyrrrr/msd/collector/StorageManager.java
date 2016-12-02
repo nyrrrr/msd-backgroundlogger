@@ -21,11 +21,12 @@ import java.util.List;
 
 public class StorageManager {
 
-    private static final String STRING_JSON_FILE_NAME = "victim-data.json";
     private static final String STRING_CSV_FILE_NAME = "victim-data.csv";
 
     private static StorageManager oInstance = null;
     public JSONArray oData;
+
+    public ArrayList<String> fileList;
 
     private SensorData oSensorData;
     private List<SensorData> oSensorDataList;
@@ -98,10 +99,6 @@ public class StorageManager {
         oData = convertSensorDataLogToJSON();
 
         String fileName = oData.getJSONObject(0).get("Timestamp") + "-";
-//        FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_JSON_FILE_NAME);
-//        file.write(oData.toString(4));
-//        file.flush();
-//        file.close();
         Log.d("Data logged", oData.length() + "");
         // write csv
         FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_CSV_FILE_NAME);

