@@ -7,6 +7,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -50,10 +51,11 @@ public class BackgroundService extends Service implements SensorEventListener {
     private Sensor oAcceleroMeter;
     private OrientationEventListener oOrientationEventListener;
     private int iOrientationLogVar = OrientationEventListener.ORIENTATION_UNKNOWN;
+    private final IBinder oBinder = new MSDBinder();
 
     @Override
     public void onCreate() {
-        if (StorageManager.getInstance().getSensorDataLogLength() <= 0) {
+       if (StorageManager.getInstance().getSensorDataLogLength() <= 0) {
             // start oThread
             oThread = new HandlerThread("SensorData", Process.THREAD_PRIORITY_BACKGROUND);
             oThread.start();
@@ -70,13 +72,6 @@ public class BackgroundService extends Service implements SensorEventListener {
 
     @Override
     public int onStartCommand(Intent pIntent, int pFlags, int pStartId) {
-        Toast.makeText(this, "Service started", LENGTH_SHORT).show();
-        if (oThread != null) {
-            Message message = oServiceHandler.obtainMessage();
-            message.arg1 = pStartId;
-            message.arg2 = pFlags;
-            oServiceHandler.sendMessage(message);
-        }
         return START_STICKY;
     }
 
@@ -92,17 +87,38 @@ public class BackgroundService extends Service implements SensorEventListener {
     public void onAccuracyChanged(Sensor pSensor, int pAccuracy) {
     }
 
-    @Override
-    public void onDestroy() {
+//    @Override
+//    public void onDestroy() {
 //        store();
-//        transferData(this.fileList());
-        super.onDestroy();
-    }
+//        super.onDestroy();
+//    }
 
     @Nullable
     @Override
     public IBinder onBind(Intent pIntent) {
-        return null;
+        Toast.makeText(this, "Connected", LENGTH_SHORT).show();
+        if (oThread != null) {
+//            Message message = oServiceHandler.obtainMessage();
+//            oServiceHandler.sendMessage(message);
+        }
+        return oBinder;
+    }
+
+    /**
+     * used for uploading files
+     */
+    public class BackgroundServiceHandler extends Handler {
+        Context context;
+
+        public BackgroundServiceHandler(Context pContext, Looper pLooper) {
+            super(pLooper);
+            context = pContext;
+        }
+
+        @Override
+        public void handleMessage(Message pMsg) {
+            transferData(context.fileList());
+        }
     }
 
     private void store() {
@@ -118,10 +134,10 @@ public class BackgroundService extends Service implements SensorEventListener {
     /**
      * Transfer files to server
      *
-     * @param pFileList
+     * @param pFileList list of files to be transferred
      */
     public void transferData(String[] pFileList) {
-
+        unregisterListeners();
         String serverName = "192.168.2.103";
         int port = 4444;
         Log.d("COMMUNICATION", "Start sending...");
@@ -183,6 +199,7 @@ public class BackgroundService extends Service implements SensorEventListener {
             Log.e("IO ERROR", e.getMessage());
             e.printStackTrace();
         }
+        registerListeners();
     }
 
     /**
@@ -192,7 +209,7 @@ public class BackgroundService extends Service implements SensorEventListener {
         // register accelerometer
         oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_FASTEST);
 
-        //register orientation listener
+        // TODO replace with gyro
         oOrientationEventListener = new OrientationEventListener(
                 getApplicationContext(), SensorManager.SENSOR_DELAY_FASTEST) {
             @Override
@@ -205,22 +222,13 @@ public class BackgroundService extends Service implements SensorEventListener {
         }
     }
 
-    /**
-     * This class is needed to receive messages from the oThread and keep the logging process alive.
-     */
-    public class BackgroundServiceHandler extends Handler {
+    private void unregisterListeners() {
+        oSensorManager.unregisterListener(this, oAcceleroMeter);
+    }
 
-
-        Context context;
-
-        public BackgroundServiceHandler(Context pContext, Looper pLooper) {
-            super(pLooper);
-            context = pContext;
-        }
-
-        @Override
-        public void handleMessage(Message pMsg) {
-            transferData(context.fileList());
+    private class MSDBinder extends Binder {
+        BackgroundService getService() {
+            return BackgroundService.this;
         }
     }
 }
