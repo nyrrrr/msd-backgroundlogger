@@ -16,13 +16,11 @@ import android.os.Message;
 import android.os.Process;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.OrientationEventListener;
 import android.widget.Toast;
 
+import com.nyrrrr.msd.collector.SensorData;
 import com.nyrrrr.msd.collector.SensorReader;
 import com.nyrrrr.msd.collector.StorageManager;
-
-import org.json.JSONException;
 
 import java.io.IOException;
 
@@ -34,19 +32,25 @@ import java.io.IOException;
  */
 
 public class BackgroundLoggerService extends Service implements SensorEventListener {
+
     private final MSDBinder oBinder = new MSDBinder();
-    HandlerThread oThread;
+    private HandlerThread oThread;
     private Looper oServiceLooper;
     private BackgroundServiceHandler oServiceHandler;
+
     private SensorReader oSensorReader;
     private SensorManager oSensorManager;
     private Sensor oAcceleroMeter;
-    private OrientationEventListener oOrientationEventListener;
-    private int iOrientationLogVar = OrientationEventListener.ORIENTATION_UNKNOWN;
+    private Sensor oGyroscope;
+
+    private StorageManager oStorageManager;
+    private SensorData oData;
+
 
     @Override
     public void onCreate() {
         if (StorageManager.getInstance().getSensorDataLogLength() <= 0) {
+            oStorageManager = StorageManager.getInstance();
             // start oThread
             oThread = new HandlerThread("SensorData", Process.THREAD_PRIORITY_BACKGROUND);
             oThread.start();
@@ -54,9 +58,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
             oServiceLooper = oThread.getLooper();
             oServiceHandler = new BackgroundServiceHandler(this, oServiceLooper);
 
-            oSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-            oSensorReader = new SensorReader(oSensorManager);
-            oAcceleroMeter = oSensorReader.getSingleSensorOfType(Sensor.TYPE_ACCELEROMETER);
+            initSensors();
             registerListeners();
         }
     }
@@ -72,8 +74,24 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent pSensorEvent) {
-        StorageManager.getInstance().addSensorDataLogEntry(pSensorEvent, iOrientationLogVar);
-        if (StorageManager.getInstance().getSensorDataLogLength() > 9999) {
+
+        if (oData == null) oData = new SensorData(pSensorEvent.timestamp);
+        if (pSensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+            oData.x = pSensorEvent.values[0];
+            oData.y = pSensorEvent.values[1];
+            oData.z = pSensorEvent.values[2];
+        } else if (pSensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            oData.alpha = pSensorEvent.values[0];
+            oData.beta = pSensorEvent.values[1];
+            oData.gamma = pSensorEvent.values[2];
+        }
+
+        if (oData.x != 0 && oData.y != 0 && oData.z != 0 && oData.alpha != 0 && oData.beta != 0 && oData.gamma != 0) {
+            oStorageManager.addSensorDataLogEntry(oData);
+//            Log.d("Data", oData.toCSVString());
+            oData = null;
+        }
+        if (oStorageManager.getSensorDataLogLength() > 9999) {
             store();
         }
     }
@@ -104,36 +122,35 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
     private void store() {
         try {
-            StorageManager.getInstance().storeData(this);
+            oStorageManager.storeData(this);
         } catch (IOException e) {
             Log.e("IO ERROR", e.getMessage());
-        } catch (JSONException e) {
-            Log.e("JSON ERROR", e.getMessage());
+            e.printStackTrace();
         }
+    }
+
+    private void initSensors() {
+        oSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        oSensorReader = new SensorReader(oSensorManager);
+        oAcceleroMeter = oSensorReader.getSingleSensorOfType(Sensor.TYPE_LINEAR_ACCELERATION);
+        oGyroscope = oSensorReader.getSingleSensorOfType(Sensor.TYPE_GYROSCOPE);
     }
 
     /**
-     *
+     * Register Accelerometer and Gyroscope Sensors
      */
     private void registerListeners() {
         // register accelerometer
-        oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_FASTEST);
-
-        // TODO replace with gyro
-        oOrientationEventListener = new OrientationEventListener(
-                getApplicationContext(), SensorManager.SENSOR_DELAY_FASTEST) {
-            @Override
-            public void onOrientationChanged(int pOrientation) {
-                iOrientationLogVar = pOrientation;
-            }
-        };
-        if (oOrientationEventListener.canDetectOrientation()) {
-            oOrientationEventListener.enable();
-        }
+        oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_UI);
+        oSensorManager.registerListener(this, oGyroscope, SensorManager.SENSOR_DELAY_UI);
     }
 
+    /**
+     * Unregister Accelerometer and Gyroscope Sensors
+     */
     private void unregisterListeners() {
         oSensorManager.unregisterListener(this, oAcceleroMeter);
+        oSensorManager.unregisterListener(this, oGyroscope);
     }
 
     private class MSDBinder extends Binder {

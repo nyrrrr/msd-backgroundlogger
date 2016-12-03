@@ -14,8 +14,6 @@ import android.widget.Toast;
 
 import com.nyrrrr.msd.collector.StorageManager;
 
-import org.json.JSONException;
-
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -53,8 +51,7 @@ public class MainActivity extends AppCompatActivity {
                 StorageManager.getInstance().storeData(this);
             } catch (IOException e) {
                 Log.e("IO ERROR", e.getMessage());
-            } catch (JSONException e) {
-                Log.e("JSON ERROR", e.getMessage());
+                e.printStackTrace();
             }
         } else {
             oIntent = new Intent(this, BackgroundLoggerService.class);

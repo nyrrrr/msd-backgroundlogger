@@ -1,10 +1,8 @@
 package com.nyrrrr.msd.collector;
 
 import android.content.Context;
-import android.hardware.SensorEvent;
 import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.FileWriter;
@@ -24,7 +22,6 @@ public class StorageManager {
     private static final String STRING_CSV_FILE_NAME = "victim-data.csv";
 
     private static StorageManager oInstance = null;
-    public JSONArray oData;
 
     public ArrayList<String> fileList;
 
@@ -42,34 +39,8 @@ public class StorageManager {
         return oInstance;
     }
 
-    /**
-     * puts captured data into a list for later storage
-     *
-     * @param pEvent       sensor data event
-     * @param pOrientation orientation during capture
-     * @return SensorData object
-     */
-    public SensorData addSensorDataLogEntry(SensorEvent pEvent, int pOrientation) {
-        oSensorData = new SensorData(pEvent, pOrientation);
-        if (oSensorDataList.add(oSensorData)) {
-            return oSensorData;
-        }
-        return null;
-    }
-
-    /**
-     * Converts List of SensorData Object to JSONArray object.
-     * Can also remove unnecessary entries form the list.
-     *
-     * @return JSONArray
-     */
-    private JSONArray convertSensorDataLogToJSON() {
-        oData = new JSONArray();
-
-        for (SensorData dataObject : oSensorDataList) {
-            oData.put(dataObject.toJSONObject());
-        }
-        return oData;
+    public void addSensorDataLogEntry(SensorData oData) {
+        oSensorDataList.add(oData);
     }
 
     /**
@@ -95,18 +66,19 @@ public class StorageManager {
      * @throws IOException
      * @throws JSONException
      */
-    public void storeData(Context pAppContext) throws JSONException, IOException {
-        oData = convertSensorDataLogToJSON();
+    public void storeData(Context pAppContext) throws IOException {
 
-        String fileName = oData.getJSONObject(0).get("Timestamp") + "-";
-        Log.d("Data logged", oData.length() + "");
+        String fileName = oSensorDataList.get(0).timestamp + "-";
+
         // write csv
         FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_CSV_FILE_NAME);
         file.write(convertSensorDataLogToCSV());
         file.flush();
         file.close();
 
-        oSensorDataList = new ArrayList<SensorData>(); // reset list
+        Log.d("Data logged", oSensorDataList.size() + "");
+
+        oSensorDataList = new ArrayList<>(); // reset list
     }
 
     /**
@@ -117,4 +89,5 @@ public class StorageManager {
     public int getSensorDataLogLength() {
         return oSensorDataList.size();
     }
+
 }
