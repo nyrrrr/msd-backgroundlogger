@@ -14,14 +14,16 @@ public class SensorData {
     public float alpha;
     public float beta;
     public float gamma;
-    long timestamp;
+    public long timestamp;
 
     public SensorData(long pTimestamp) {
         timestamp = pTimestamp;
     }
 
     public String toCSVString() {
-        return timestamp + "," + x + "," + y + "," + z + "," + alpha + "," + beta + "," + gamma + "\n";
+        return timestamp + ","
+                + x + "," + y + "," + z + ","
+                + alpha + "," + beta + "," + gamma + "\n";
     }
 
     public String getCsvHeaders() {

@@ -79,7 +79,11 @@ public class MainActivity extends AppCompatActivity {
             new BackgroundUploadTask() {
                 @Override
                 protected void onPostExecute(Object o) {
-                    Toast.makeText(getApplicationContext(), "Update successful", Toast.LENGTH_SHORT).show();
+                    if(o == null) {
+                        Toast.makeText(getApplicationContext(), "Update successful", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), ((Exception) o).getMessage() + "\ntry again later.", Toast.LENGTH_LONG).show();
+                    }
                     unbindService(oConnection);
                     oButton.setEnabled(true);
                 }
