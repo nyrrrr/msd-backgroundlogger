@@ -1,5 +1,7 @@
 package com.nyrrrr.msd.collector;
 
+import java.text.SimpleDateFormat;
+
 /**
  * Sensor Data object used to be saved later on
  * Stores Accelerometer data and orientation
@@ -14,14 +16,17 @@ public class SensorData {
     public float alpha;
     public float beta;
     public float gamma;
+    public String timestampString;
     public long timestamp;
 
     public SensorData(long pTimestamp) {
         timestamp = pTimestamp;
+        SimpleDateFormat date = new SimpleDateFormat("MM/dd/yyyy' 'HH:mm:ss:SSSS");
+        timestampString = date.format(new java.sql.Timestamp(System.currentTimeMillis()));
     }
 
     public String toCSVString() {
-        return timestamp + ","
+        return timestampString + ","
                 + x + "," + y + "," + z + ","
                 + alpha + "," + beta + "," + gamma + "\n";
     }
