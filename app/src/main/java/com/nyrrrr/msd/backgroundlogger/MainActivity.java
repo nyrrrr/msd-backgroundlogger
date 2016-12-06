@@ -20,18 +20,41 @@ public class MainActivity extends AppCompatActivity {
 
     private Intent oIntent;
     private Button oButton;
+    static BackgroundLoggerService oBacklogger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        oIntent = new Intent(this, BackgroundLoggerService.class);
         startServerOrBackUpData();
+
+        oBacklogger = new BackgroundLoggerService();
 
         initButton();
     }
 
     @Override
+    protected void onStart() {
+        if(oBacklogger != null) oBacklogger.unregisterListeners();
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        if(oBacklogger != null) oBacklogger.unregisterListeners();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        if(oBacklogger != null) oBacklogger.registerListeners();
+        super.onPause();
+    }
+
+    @Override
     protected void onStop() {
+        if(oBacklogger != null) oBacklogger.registerListeners();
         startServerOrBackUpData();
         super.onStop();
     }
@@ -54,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         } else {
-            oIntent = new Intent(this, BackgroundLoggerService.class);
             startService(oIntent);
         }
     }

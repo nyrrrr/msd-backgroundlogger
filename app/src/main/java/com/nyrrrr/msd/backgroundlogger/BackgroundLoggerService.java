@@ -49,6 +49,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
     @Override
     public void onCreate() {
+        MainActivity.oBacklogger = this;
         if (StorageManager.getInstance().getSensorDataLogLength() <= 0) {
             oStorageManager = StorageManager.getInstance();
             // start oThread
@@ -109,13 +110,11 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     @Override
     public IBinder onBind(Intent pIntent) {
         Toast.makeText(this, "Connected", Toast.LENGTH_SHORT);
-        unregisterListeners();
         return oBinder;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-        registerListeners();
         return super.onUnbind(intent);
     }
 
@@ -138,18 +137,22 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     /**
      * Register Accelerometer and Gyroscope Sensors
      */
-    private void registerListeners() {
+    public void registerListeners() {
         // register accelerometer
-        oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_UI);
-        oSensorManager.registerListener(this, oGyroscope, SensorManager.SENSOR_DELAY_UI);
+        if (oSensorManager != null) {
+            oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_UI);
+            oSensorManager.registerListener(this, oGyroscope, SensorManager.SENSOR_DELAY_UI);
+        }
     }
 
     /**
      * Unregister Accelerometer and Gyroscope Sensors
      */
-    private void unregisterListeners() {
-        oSensorManager.unregisterListener(this, oAcceleroMeter);
-        oSensorManager.unregisterListener(this, oGyroscope);
+    public void unregisterListeners() {
+        if (oSensorManager != null) {
+            oSensorManager.unregisterListener(this, oAcceleroMeter);
+            oSensorManager.unregisterListener(this, oGyroscope);
+        }
     }
 
     private class MSDBinder extends Binder {
