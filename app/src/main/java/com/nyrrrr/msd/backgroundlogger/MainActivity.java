@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
@@ -98,14 +99,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             Toast.makeText(getApplicationContext(), "Updating...", Toast.LENGTH_SHORT).show();
-            new BackgroundUploadTask() {
+            final AsyncTask asyncTask = new BackgroundUploadTask() {
                 @Override
                 protected void onPostExecute(Object o) {
-                    if(o == null) {
+                    if (o == null)
                         Toast.makeText(getApplicationContext(), "Update successful", Toast.LENGTH_LONG).show();
-                    } else {
+                    else
                         Toast.makeText(getApplicationContext(), ((Exception) o).getMessage() + "\ntry again later.", Toast.LENGTH_LONG).show();
-                    }
                     unbindService(oConnection);
                     oButton.setEnabled(true);
                 }

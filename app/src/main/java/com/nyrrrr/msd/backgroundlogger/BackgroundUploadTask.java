@@ -38,7 +38,7 @@ class BackgroundUploadTask extends AsyncTask {
      */
     private Exception transferData(String[] pFileList) {
 
-        Exception exception = null;
+        Exception exception;
 
         Log.d("COMMUNICATION", "Start sending...");
         if ((exception = hostAvailabilityCheck()) == null) {
@@ -56,7 +56,7 @@ class BackgroundUploadTask extends AsyncTask {
                     char[] charArray = new char[(int) file.length()];
                     FileInputStream inputStream = new FileInputStream(file);
                     BufferedReader fileReader = new BufferedReader(new InputStreamReader(inputStream));
-                    int i = fileReader.read(charArray, 0, charArray.length);
+                    fileReader.read(charArray, 0, charArray.length);
 
                     // transfer protocol
                     writer.println("FILE");

@@ -27,18 +27,14 @@ import java.io.IOException;
 /**
  * Service that is supposed to log Accelerometer data in the background
  * Created by nyrrrr on 24.11.2016.
- *
- * @// TODO: 24.11.2016 remove toasts
  */
 
 public class BackgroundLoggerService extends Service implements SensorEventListener {
 
     private final MSDBinder oBinder = new MSDBinder();
     private HandlerThread oThread;
-    private Looper oServiceLooper;
     private BackgroundServiceHandler oServiceHandler;
 
-    private SensorReader oSensorReader;
     private SensorManager oSensorManager;
     private Sensor oAcceleroMeter;
     private Sensor oGyroscope;
@@ -56,7 +52,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
             oThread = new HandlerThread("SensorData", Process.THREAD_PRIORITY_BACKGROUND);
             oThread.start();
 
-            oServiceLooper = oThread.getLooper();
+            Looper oServiceLooper = oThread.getLooper();
             oServiceHandler = new BackgroundServiceHandler(this, oServiceLooper);
 
             initSensors();
@@ -75,7 +71,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent pSensorEvent) {
-        if (oData == null) oData = new SensorData(pSensorEvent.timestamp);
+        if (oData == null) oData = new SensorData();
         if (pSensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             oData.x = pSensorEvent.values[0];
             oData.y = pSensorEvent.values[1];
@@ -88,7 +84,6 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
         if (oData.x != 0 && oData.y != 0 && oData.z != 0 && oData.alpha != 0 && oData.beta != 0 && oData.gamma != 0) {
             oStorageManager.addSensorDataLogEntry(oData);
-//            Log.d("Data", oData.toCSVString());
             oData = null;
         }
         if (oStorageManager.getSensorDataLogLength() > 9999) {
@@ -109,7 +104,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     @Nullable
     @Override
     public IBinder onBind(Intent pIntent) {
-        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT);
+        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
         return oBinder;
     }
 
@@ -129,7 +124,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
     private void initSensors() {
         oSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        oSensorReader = new SensorReader(oSensorManager);
+        SensorReader oSensorReader = new SensorReader(oSensorManager);
         oAcceleroMeter = oSensorReader.getSingleSensorOfType(Sensor.TYPE_LINEAR_ACCELERATION);
         oGyroscope = oSensorReader.getSingleSensorOfType(Sensor.TYPE_GYROSCOPE);
     }
@@ -164,7 +159,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     public class BackgroundServiceHandler extends Handler {
         Context context;
 
-        public BackgroundServiceHandler(Context pContext, Looper pLooper) {
+        BackgroundServiceHandler(Context pContext, Looper pLooper) {
             super(pLooper);
             context = pContext;
         }
