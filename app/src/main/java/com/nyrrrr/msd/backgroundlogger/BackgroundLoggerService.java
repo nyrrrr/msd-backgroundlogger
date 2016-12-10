@@ -15,14 +15,11 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.nyrrrr.msd.collector.SensorData;
 import com.nyrrrr.msd.collector.SensorReader;
 import com.nyrrrr.msd.collector.StorageManager;
-
-import java.io.IOException;
 
 /**
  * Service that is supposed to log Accelerometer data in the background
@@ -114,12 +111,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     }
 
     private void store() {
-        try {
-            oStorageManager.storeData(this);
-        } catch (IOException e) {
-            Log.e("IO ERROR", e.getMessage());
-            e.printStackTrace();
-        }
+        oStorageManager.storeData(this);
     }
 
     private void initSensors() {

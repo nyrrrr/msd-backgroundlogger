@@ -7,6 +7,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,23 +48,52 @@ public class StorageManager {
      * @param pAppContext app context
      * @throws IOException
      */
-    public void storeData(Context pAppContext) throws IOException {
+    public void storeData(Context pAppContext) {
 
+
+        FileWriter file = null;
+        BufferedWriter bw = null;
+        PrintWriter out = null;
+
+        SimpleDateFormat date = new SimpleDateFormat("yyMMddHH");
+        String filePRefix = date.format(new java.sql.Timestamp(System.currentTimeMillis()));
         // write csv
-        FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + STRING_CSV_FILE_NAME, true);
-        BufferedWriter bw = new BufferedWriter(file);
-        PrintWriter out = new PrintWriter(bw);
+        try {
+            file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + filePRefix + "-" + STRING_CSV_FILE_NAME, true);
+            bw = new BufferedWriter(file);
+            out = new PrintWriter(bw);
 
-        out.println(oSensorDataList.get(0).getCsvHeaders());
-        for(SensorData dataObject : oSensorDataList) {
-            out.print(dataObject.toCSVString());
+            out.println(oSensorDataList.get(0).getCsvHeaders());
+            for (SensorData dataObject : oSensorDataList) {
+                out.print(dataObject.toCSVString());
+            }
+            out.close();
+
+            Log.d("Data logged", oSensorDataList.size() + "");
+
+            oSensorDataList = new ArrayList<>(); // reset list
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null)
+                    out.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                if (bw != null)
+                    bw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                if (file != null)
+                    file.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
-        out.close();
-
-        Log.d("Data logged", oSensorDataList.size() + "");
-
-        oSensorDataList = new ArrayList<>(); // reset list
     }
 
     /**
@@ -71,6 +101,7 @@ public class StorageManager {
      *
      * @return int
      */
+
     public int getSensorDataLogLength() {
         return oSensorDataList.size();
     }

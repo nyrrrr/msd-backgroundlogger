@@ -15,84 +15,11 @@ import android.widget.Toast;
 
 import com.nyrrrr.msd.collector.StorageManager;
 
-import java.io.IOException;
-
 public class MainActivity extends AppCompatActivity {
 
+    static BackgroundLoggerService oBacklogger;
     private Intent oIntent;
     private Button oButton;
-    static BackgroundLoggerService oBacklogger;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        oIntent = new Intent(this, BackgroundLoggerService.class);
-        startServerOrBackUpData();
-
-        oBacklogger = new BackgroundLoggerService();
-
-        initButton();
-    }
-
-    @Override
-    protected void onStart() {
-        if(oBacklogger != null) oBacklogger.unregisterListeners();
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        if(oBacklogger != null) oBacklogger.unregisterListeners();
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        if(oBacklogger != null) oBacklogger.registerListeners();
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        if(oBacklogger != null) oBacklogger.registerListeners();
-        startServerOrBackUpData();
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    /**
-     * Start Service if it's not already started.
-     * Otherwise create a backup of the current dataset.
-     */
-    private void startServerOrBackUpData() {
-        if (StorageManager.getInstance().getSensorDataLogLength() > 0) {
-            try {
-                StorageManager.getInstance().storeData(this);
-            } catch (IOException e) {
-                Log.e("IO ERROR", e.getMessage());
-                e.printStackTrace();
-            }
-        } else {
-            startService(oIntent);
-        }
-    }
-
-    private void initButton() {
-        oButton = (Button) findViewById(R.id.button);
-        oButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bindService(oIntent, oConnection, Context.BIND_ABOVE_CLIENT);
-                oButton.setEnabled(false);
-            }
-        });
-    }
-
     // used for binding service to main app
     protected ServiceConnection oConnection = new ServiceConnection() {
 
@@ -117,4 +44,71 @@ public class MainActivity extends AppCompatActivity {
             Log.d("LOG", "Disconnected");
         }
     };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        oIntent = new Intent(this, BackgroundLoggerService.class);
+        startServerOrBackUpData();
+
+        oBacklogger = new BackgroundLoggerService();
+
+        initButton();
+    }
+
+    @Override
+    protected void onStart() {
+        if (oBacklogger != null) oBacklogger.unregisterListeners();
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        if (oBacklogger != null) oBacklogger.unregisterListeners();
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        if (oBacklogger != null) oBacklogger.registerListeners();
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        if (oBacklogger != null) oBacklogger.registerListeners();
+        startServerOrBackUpData();
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    /**
+     * Start Service if it's not already started.
+     * Otherwise create a backup of the current dataset.
+     */
+    private void startServerOrBackUpData() {
+        if (StorageManager.getInstance().getSensorDataLogLength() > 0) {
+
+            StorageManager.getInstance().storeData(this);
+
+        } else {
+            startService(oIntent);
+        }
+    }
+
+    private void initButton() {
+        oButton = (Button) findViewById(R.id.button);
+        oButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                bindService(oIntent, oConnection, Context.BIND_ABOVE_CLIENT);
+                oButton.setEnabled(false);
+            }
+        });
+    }
 }
