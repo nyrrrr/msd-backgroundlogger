@@ -49,10 +49,8 @@ public class StorageManager {
      */
     public void storeData(Context pAppContext) throws IOException {
 
-        String fileName = oSensorDataList.get(0).timestamp + "-";
-
         // write csv
-        FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + fileName + STRING_CSV_FILE_NAME, true);
+        FileWriter file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + STRING_CSV_FILE_NAME, true);
         BufferedWriter bw = new BufferedWriter(file);
         PrintWriter out = new PrintWriter(bw);
 

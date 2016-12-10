@@ -135,8 +135,8 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     public void registerListeners() {
         // register accelerometer
         if (oSensorManager != null) {
-            oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_UI);
-            oSensorManager.registerListener(this, oGyroscope, SensorManager.SENSOR_DELAY_UI);
+            oSensorManager.registerListener(this, oAcceleroMeter, SensorManager.SENSOR_DELAY_FASTEST);
+            oSensorManager.registerListener(this, oGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
         }
     }
 
