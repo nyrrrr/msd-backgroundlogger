@@ -56,10 +56,10 @@ public class StorageManager {
         PrintWriter out = null;
 
         SimpleDateFormat date = new SimpleDateFormat("yyMMddHH");
-        String filePRefix = date.format(new java.sql.Timestamp(System.currentTimeMillis()));
+        String filenamePrefix = date.format(new java.sql.Timestamp(System.currentTimeMillis()));
         // write csv
         try {
-            file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + filePRefix + "-" + STRING_CSV_FILE_NAME, true);
+            file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + filenamePrefix + "-" + STRING_CSV_FILE_NAME, true);
             bw = new BufferedWriter(file);
             out = new PrintWriter(bw);
 
