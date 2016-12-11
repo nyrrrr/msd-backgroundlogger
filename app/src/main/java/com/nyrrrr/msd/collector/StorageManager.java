@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -59,11 +60,17 @@ public class StorageManager {
         String filenamePrefix = date.format(new java.sql.Timestamp(System.currentTimeMillis()));
         // write csv
         try {
-            file = new FileWriter(pAppContext.getFilesDir().getPath() + "/" + filenamePrefix + "-" + STRING_CSV_FILE_NAME, true);
+            File f = new File(pAppContext.getFilesDir().getPath() + "/" + filenamePrefix + "-" + STRING_CSV_FILE_NAME);
+            boolean isExisting = f.exists();
+            file = new FileWriter(f, true);
             bw = new BufferedWriter(file);
             out = new PrintWriter(bw);
 
-            out.println(oSensorDataList.get(0).getCsvHeaders());
+            if (isExisting == false) {
+                out.println(oSensorDataList.get(0).getCsvHeaders());
+            } else {
+                System.out.print(1);
+            }
             for (SensorData dataObject : oSensorDataList) {
                 out.print(dataObject.toCSVString());
             }
