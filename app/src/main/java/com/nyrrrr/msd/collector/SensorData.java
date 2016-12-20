@@ -8,30 +8,34 @@ package com.nyrrrr.msd.collector;
 
 public class SensorData {
 
-    public float x;
-    public float y;
-    public float z;
-    public float alpha;
-    public float beta;
-    public float gamma;
-    long timestamp;
+    public float x; // x acc
+    public float y; // y acc
+    public float z; // z acc
+    public float a; // x gyro
+    public float b; // y gyro
+    public float c; // z gyro
+    public float alpha; // alpha
+    public float beta; // beta
+    public float gamma; // gamma
+    private long timestamp;
 
 
-    public SensorData () {
+    public SensorData() {
         this(System.currentTimeMillis());
     }
 
-    public SensorData(long pTimeStamp) {
+    private SensorData(long pTimeStamp) {
         timestamp = pTimeStamp;
     }
 
     String toCSVString() {
         return timestamp + ","
                 + x + "," + y + "," + z + ","
-                + alpha + "," + beta + "," + gamma +  "\n";
+                + a + "," + b + "," + c + ","
+                + alpha + "," + beta + "," + gamma + "\n";
     }
 
     String getCsvHeaders() {
-        return "Timestamp,x,y,z,alpha,beta,gamma";
+        return "Timestamp,x,y,z,a,b,c,alpha,beta,gamma";
     }
 }
