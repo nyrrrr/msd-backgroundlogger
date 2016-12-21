@@ -40,6 +40,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     private SensorData oData;
     private Sensor oOrientation;
 
+    private int id = 1;
 
     @Override
     public void onCreate() {
@@ -85,6 +86,8 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
         }
 
         if (oData.x != 0 && oData.y != 0 && oData.z != 0  && oData.a != 0 && oData.b != 0 && oData.c != 0 && oData.alpha != 0 && oData.beta != 0 && oData.gamma != 0) {
+            oData.id = id;
+            id++;
             oStorageManager.addSensorDataLogEntry(oData);
             oData = null;
         }
@@ -116,6 +119,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     }
 
     private void store() {
+        id = 1;
         oStorageManager.storeData(this);
     }
 

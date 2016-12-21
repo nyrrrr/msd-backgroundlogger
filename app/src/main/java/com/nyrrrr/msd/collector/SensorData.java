@@ -18,6 +18,7 @@ public class SensorData {
     public float beta; // beta
     public float gamma; // gamma
     private long timestamp;
+    public int id;
 
 
     public SensorData() {
@@ -29,13 +30,13 @@ public class SensorData {
     }
 
     String toCSVString() {
-        return timestamp + ","
+        return id + "," + timestamp + ","
                 + x + "," + y + "," + z + ","
                 + a + "," + b + "," + c + ","
                 + alpha + "," + beta + "," + gamma + "\n";
     }
 
     String getCsvHeaders() {
-        return "Timestamp,x,y,z,a,b,c,alpha,beta,gamma";
+        return "id,Timestamp,x,y,z,a,b,c,alpha,beta,gamma";
     }
 }
