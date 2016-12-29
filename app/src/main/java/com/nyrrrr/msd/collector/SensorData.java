@@ -17,15 +17,10 @@ public class SensorData {
     public float alpha; // alpha
     public float beta; // beta
     public float gamma; // gamma
-    private long timestamp;
     public int id;
+    private long timestamp;
 
-
-    public SensorData() {
-        this(System.currentTimeMillis());
-    }
-
-    private SensorData(long pTimeStamp) {
+    public SensorData(long pTimeStamp) {
         timestamp = pTimeStamp;
     }
 

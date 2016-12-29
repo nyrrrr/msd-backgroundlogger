@@ -70,7 +70,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent pSensorEvent) {
-        if (oData == null) oData = new SensorData();
+        if (oData == null) oData = new SensorData(pSensorEvent.timestamp);
         if (pSensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             oData.x = pSensorEvent.values[0];
             oData.y = pSensorEvent.values[1];
@@ -84,8 +84,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
             oData.beta = pSensorEvent.values[1];
             oData.gamma = pSensorEvent.values[2];
         }
-
-        if (oData.x != 0 && oData.y != 0 && oData.z != 0  && oData.a != 0 && oData.b != 0 && oData.c != 0 && oData.alpha != 0 && oData.beta != 0 && oData.gamma != 0) {
+        if (oData.x != 0 && oData.y != 0 && oData.z != 0 && oData.a != 0 && oData.b != 0 && oData.c != 0 && oData.alpha != 0 && oData.beta != 0 && oData.gamma != 0) {
             oData.id = id;
             id++;
             oStorageManager.addSensorDataLogEntry(oData);
