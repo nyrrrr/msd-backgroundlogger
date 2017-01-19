@@ -14,9 +14,9 @@ public class SensorData {
     public float a; // x gyro
     public float b; // y gyro
     public float c; // z gyro
-    public float alpha; // alpha
-    public float beta; // beta
-    public float gamma; // gamma
+    public float x_ra; // x_ra
+    public float y_ra; // y_ra
+    public float z_ra; // z_ra
     public int id;
     private long timestamp;
 
@@ -28,10 +28,10 @@ public class SensorData {
         return id + "," + timestamp + ","
                 + x + "," + y + "," + z + ","
                 + a + "," + b + "," + c + ","
-                + alpha + "," + beta + "," + gamma + "\n";
+                + x_ra + "," + y_ra + "," + z_ra + "\n";
     }
 
     String getCsvHeaders() {
-        return "id,Timestamp,x,y,z,a,b,c,alpha,beta,gamma";
+        return "id,Timestamp,x,y,z,a,b,c,x_ra,y_ra,z_ra";
     }
 }
