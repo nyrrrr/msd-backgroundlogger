@@ -71,7 +71,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent pSensorEvent) {
-        if (oData == null) oData = new SensorData(System.currentTimeMillis());
+        if (oData == null) oData = new SensorData(System.nanoTime());
         if (pSensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             oData.x = pSensorEvent.values[0];
             oData.y = pSensorEvent.values[1];
@@ -114,6 +114,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     @Override
     public IBinder onBind(Intent pIntent) {
         Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+        if (oStorageManager.getSensorDataLogLength() > 1) store();
         return oBinder;
     }
 

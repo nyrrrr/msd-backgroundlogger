@@ -56,7 +56,7 @@ public class StorageManager {
         BufferedWriter bw = null;
         PrintWriter out = null;
 
-        SimpleDateFormat date = new SimpleDateFormat("yyMMddHH");
+        SimpleDateFormat date = new SimpleDateFormat("yyMMddHHmm");
         String filenamePrefix = date.format(new java.sql.Timestamp(System.currentTimeMillis()));
         // write csv
         try {
