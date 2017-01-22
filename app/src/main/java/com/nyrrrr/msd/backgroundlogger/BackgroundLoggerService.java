@@ -41,6 +41,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     private Sensor oAccelerometer;
 
     private int id = 1;
+    private Sensor oOrientation;
 
     @Override
     public void onCreate() {
@@ -70,7 +71,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent pSensorEvent) {
-        if (oData == null) oData = new SensorData(pSensorEvent.timestamp);
+        if (oData == null) oData = new SensorData(System.currentTimeMillis());
         if (pSensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             oData.x = pSensorEvent.values[0];
             oData.y = pSensorEvent.values[1];
@@ -79,12 +80,16 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
             oData.a = pSensorEvent.values[0];
             oData.b = pSensorEvent.values[1];
             oData.c = pSensorEvent.values[2];
-        } else if (pSensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+        } else if (pSensorEvent.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+            oData.alpha = pSensorEvent.values[0];
+            oData.beta = pSensorEvent.values[1];
+            oData.gamma = pSensorEvent.values[2];
+        } else {
             oData.x_ra = pSensorEvent.values[0];
             oData.y_ra = pSensorEvent.values[1];
             oData.z_ra = pSensorEvent.values[2];
         }
-        if (oData.x != 0 && oData.y != 0 && oData.z != 0 && oData.a != 0 && oData.b != 0 && oData.c != 0 && oData.x_ra != 0 && oData.y_ra != 0 && oData.z_ra != 0) {
+        if (oData.x != 0 && oData.y != 0 && oData.z != 0 && oData.a != 0 && oData.b != 0 && oData.c != 0 && oData.x_ra != 0 && oData.y_ra != 0 && oData.z_ra != 0 && oData.alpha != 0 && oData.beta != 0 && oData.gamma != 0) {
             oData.id = id;
             id++;
             oStorageManager.addSensorDataLogEntry(oData);
@@ -128,6 +133,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
         oLinearAcceleroMeter = oSensorReader.getSingleSensorOfType(Sensor.TYPE_LINEAR_ACCELERATION);
         oGyroscope = oSensorReader.getSingleSensorOfType(Sensor.TYPE_GYROSCOPE);
         oAccelerometer = oSensorReader.getSingleSensorOfType(Sensor.TYPE_ACCELEROMETER);
+        oOrientation = oSensorReader.getSingleSensorOfType(Sensor.TYPE_ORIENTATION);
     }
 
     /**
@@ -139,6 +145,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
             oSensorManager.registerListener(this, oLinearAcceleroMeter, SensorManager.SENSOR_DELAY_FASTEST);
             oSensorManager.registerListener(this, oGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
             oSensorManager.registerListener(this, oAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+            oSensorManager.registerListener(this, oOrientation, SensorManager.SENSOR_DELAY_FASTEST);
         }
     }
 
@@ -150,6 +157,7 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
             oSensorManager.unregisterListener(this, oLinearAcceleroMeter);
             oSensorManager.unregisterListener(this, oGyroscope);
             oSensorManager.unregisterListener(this, oAccelerometer);
+            oSensorManager.unregisterListener(this, oOrientation);
         }
     }
 
