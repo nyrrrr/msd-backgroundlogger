@@ -112,7 +112,7 @@ class BackgroundUploadTask extends AsyncTask {
         try {
             InetSocketAddress isa = new InetSocketAddress(SERVER_ADDRESS, TCP_SERVER_PORT);
             Socket s = new Socket();
-            s.connect(isa, 100);
+            s.connect(isa, 10000);
             s.close();
         } catch (IOException e) {
             return e;

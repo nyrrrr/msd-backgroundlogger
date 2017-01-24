@@ -40,7 +40,6 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     private SensorData oData;
     private Sensor oAccelerometer;
 
-    private int id = 1;
     private Sensor oOrientation;
 
     @Override
@@ -90,8 +89,6 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
             oData.z_ra = pSensorEvent.values[2];
         }
         if (oData.x != 0 && oData.y != 0 && oData.z != 0 && oData.a != 0 && oData.b != 0 && oData.c != 0 && oData.x_ra != 0 && oData.y_ra != 0 && oData.z_ra != 0 && oData.alpha != 0 && oData.beta != 0 && oData.gamma != 0) {
-            oData.id = id;
-            id++;
             oStorageManager.addSensorDataLogEntry(oData);
             oData = null;
         }
@@ -114,7 +111,6 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     @Override
     public IBinder onBind(Intent pIntent) {
         Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
-        if (oStorageManager.getSensorDataLogLength() > 1) store();
         return oBinder;
     }
 
@@ -124,7 +120,6 @@ public class BackgroundLoggerService extends Service implements SensorEventListe
     }
 
     private void store() {
-        id = 1;
         oStorageManager.storeData(this);
     }
 

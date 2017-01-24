@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
+        // only log when app is in background
         if (oBacklogger != null) oBacklogger.unregisterListeners();
         super.onStart();
     }
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         oButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                startServerOrBackUpData();
                 bindService(oIntent, oConnection, Context.BIND_ABOVE_CLIENT);
                 oButton.setEnabled(false);
             }
