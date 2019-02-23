@@ -1,2 +1,2 @@
 # msd-backgroundlogger
-[WIP] A dummy app that will log motion sensor data in background
+A dummy malware app that will log motion sensor data in background
